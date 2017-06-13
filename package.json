@@ -9,6 +9,6 @@
     "testdouble": "^3.0.0"
   },
   "standard": {
-    "globals": ["test", "describe", "expect", "it"]
+    "globals": ["test", "describe", "expect", "it", "beforeEach", "afterEach"]
   }
 }
