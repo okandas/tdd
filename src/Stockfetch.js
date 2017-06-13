@@ -21,8 +21,11 @@ var Stockfetch = function () {
     fs.readFile(filename, processResponse)
   }
 
-  this.parseTickers = () => {
-
+  this.parseTickers = (data) => {
+    var format = (ticker) => {
+      return ticker.trim().length !== 0 && ticker.indexOf(' ') < 0
+    }
+    return data.split('\n').filter(format)
   }
 
   this.processTickers = () => {

@@ -66,4 +66,18 @@ describe('stockfetch tests', function () {
 
     stockfetch.readTickers('tickers.txt', onError)
   })
+
+  it('parseTickers should return tickers', () => {
+    expect(stockfetch.parseTickers('a\nb\nc')).toEqual(['a', 'b', 'c'])
+  })
+
+  it('parseTickers should return empty array for empty content', () => {
+    expect(stockfetch.parseTickers('')).toEqual([])
+  })
+
+  it('parseTickers should ignore unexpected format in content', () => {
+    var rawData = 'AAPL \nBla h\nGOOG\n\n  '
+
+    expect(stockfetch.parseTickers(rawData)).toEqual(['GOOG'])
+  })
 })
