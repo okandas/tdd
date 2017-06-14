@@ -41,7 +41,7 @@ var Stockfetch = function () {
 
   this.getPrice = (ticker) => {
     var self = this
-    var url = 'https://ichart.finance.yahoo.com/table.csv?s=' + ticker
+    var url = 'https://www.google.com/finance/info?q=' + ticker
     self.https.get(url, self.processResponse.bind(self, ticker))
             .on('error', self.processHttpError.bind(self, ticker))
   }
@@ -54,11 +54,18 @@ var Stockfetch = function () {
       var data = ''
       response.on('data', chunk => { data += chunk })
       response.on('end', () => {
-        self.parsePrice(ticker, data)
+        var cleaned = self.cleanData(data)
+
+        self.parsePrice(ticker, cleaned)
       })
     } else {
       self.processError(ticker, response.statusCode)
     }
+  }
+  this.cleanData = data => {
+    var response = data.replace(/\//g, '')
+    var parsed = JSON.parse(response)
+    return parsed.pop()
   }
 
   this.processHttpError = (ticker, error) => {
@@ -68,7 +75,7 @@ var Stockfetch = function () {
 
   this.parsePrice = (ticker, data) => {
     var self = this
-    var price = data.split('\n')[1].split(',').pop()
+    var price = Number(data.l)
     self.prices[ticker] = price
     self.printReport()
   }

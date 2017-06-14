@@ -99,7 +99,7 @@ describe('stockfetch tests', function () {
 
   test('getPrice should call get on http wtesth valid URL', done => {
     td.replace(stockfetch.https, 'get', url => {
-      expect(url).toEqual('https://ichart.finance.yahoo.com/table.csv?s=TSLA')
+      expect(url).toEqual('https://www.google.com/finance/info?q=TSLA')
       done()
       return { on: () => {} }
     })
@@ -143,7 +143,7 @@ describe('stockfetch tests', function () {
     stockfetch.getPrice('TSLA')
   })
 
-  test('processResponse should call parsePrice wtesth valid data', () => {
+  test('processResponse should call parsePrice with valid data', () => {
     var dataFunction
     var endFunction
 
@@ -159,11 +159,10 @@ describe('stockfetch tests', function () {
 
     stockfetch.processResponse('TSLA', response)
 
-    dataFunction('some ')
-    dataFunction('data')
+    dataFunction('[{"hello": "people"}]')
     endFunction()
 
-    td.verify(stockfetch.parsePrice('TSLA', 'some data'))
+    td.verify(stockfetch.parsePrice('TSLA', {hello: 'people'}))
   })
 
   test('processResponse should call processError if response failed', () => {
@@ -198,12 +197,73 @@ describe('stockfetch tests', function () {
     td.verify(stockfetch.processError('TSLA', '...error code...'))
   })
 
-  var data = 'Date,Open,High,Low,Close,Volume,Adj Close\n 2015-09-11,619.75,625.780029,617.419983,625.77002,1360900,625.77002\n 2015-09-10,613.099976,624.159973,611.429993,621.349976,1900500,621.349976'
+  var data =
+  { id: '12607212',
+    t: 'TSLA',
+    e: 'NASDAQ',
+    l: '375.95',
+    l_fix: '375.95',
+    l_cur: '375.95',
+    s: '1',
+    ltt: '4:00PM EDT',
+    lt: 'Jun 13, 4:00PM EDT',
+    lt_dts: '2017-06-13T16:00:02Z',
+    c: '+16.94',
+    c_fix: '16.94',
+    cp: '4.72',
+    cp_fix: '4.72',
+    ccol: 'chg',
+    pcls_fix: '359.01',
+    el: '379.70',
+    el_fix: '379.70',
+    el_cur: '379.70',
+    elt: 'Jun 14, 8:03AM EDT',
+    ec: '+3.75',
+    ec_fix: '3.75',
+    ecp: '1.00',
+    ecp_fix: '1.00',
+    eccol: 'chg',
+    div: '',
+    yld: '' }
+
+  test('clean data should clean data from response', () => {
+    var rawData = '// [ { "id": "226108333179804" ,"t" : "YELP" ,"e" : "NYSE" ,"l" : "30.72" ,"l_fix" : "30.72" ,"l_cur" : "30.72" ,"s": "2" ,"ltt":"4:02PM EDT" ,"lt" : "Jun 13, 4:02PM EDT" ,"lt_dts" : "2017-06-13T16:02:57Z" ,"c" : "0.00" ,"c_fix" : "0.00" ,"cp" : "0.00" ,"cp_fix" : "0.00" ,"ccol" : "chb" ,"pcls_fix" : "30.72" ,"el": "30.72" ,"el_fix": "30.72" ,"el_cur": "30.72" ,"elt" : "Jun 13, 4:02PM EDT" ,"ec" : "0.00" ,"ec_fix" : "0.00" ,"ecp" : "0.00" ,"ecp_fix" : "0.00" ,"eccol" : "chb" ,"div" : "" ,"yld" : "" } ]'
+    var cleanData = {
+      id: '226108333179804',
+      t: 'YELP',
+      e: 'NYSE',
+      l: '30.72',
+      l_fix: '30.72',
+      l_cur: '30.72',
+      s: '2',
+      ltt: '4:02PM EDT',
+      lt: 'Jun 13, 4:02PM EDT',
+      lt_dts: '2017-06-13T16:02:57Z',
+      c: '0.00',
+      c_fix: '0.00',
+      cp: '0.00',
+      cp_fix: '0.00',
+      ccol: 'chb',
+      pcls_fix: '30.72',
+      el: '30.72',
+      el_fix: '30.72',
+      el_cur: '30.72',
+      elt: 'Jun 13, 4:02PM EDT',
+      ec: '0.00',
+      ec_fix: '0.00',
+      ecp: '0.00',
+      ecp_fix: '0.00',
+      eccol: 'chb',
+      div: '',
+      yld: '' }
+
+    expect(stockfetch.cleanData(rawData)).toEqual(cleanData)
+  })
 
   test('parsePrice should update prices', () => {
     stockfetch.parsePrice('TSLA', data)
 
-    expect(stockfetch.prices.TSLA).toEqual('625.77002')
+    expect(stockfetch.prices.TSLA).toEqual(375.95)
   })
 
   test('parsePrice should call printReport', () => {
@@ -309,6 +369,6 @@ describe('integration tests for stockfetch', () => {
       done()
     }
 
-    stockfetch.getPriceForTickers('./tickers.txt', display, onError)
+    stockfetch.getPriceForTickers('tickers.txt', display, onError)
   }, 10000)
 })
