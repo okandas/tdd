@@ -160,6 +160,16 @@ describe('stockfetch tests', function () {
     td.verify(stockfetch.parsePrice('TSLA', 'some data'))
   })
 
+  it('processResponse should call processError if response failed', () => {
+    var response = { statusCode: 404 }
+
+    td.replace(stockfetch, 'processError')
+
+    stockfetch.processResponse('TSLA', response)
+
+    td.verify(stockfetch.processError('TSLA', 404))
+  })
+
   it('processResponse should call processError only if response failed', () => {
     var response = {
       statusCode: 200,

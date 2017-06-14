@@ -81,6 +81,10 @@ var Stockfetch = function () {
 
   this.prices = {}
   this.errors = {}
+
+  this.reportCallback = () => {
+
+  }
 }
 
 module.exports = Stockfetch
