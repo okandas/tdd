@@ -1,5 +1,5 @@
 var fs = require('fs')
-var http = require('http')
+var https = require('https')
 
 var Stockfetch = function () {
   this.readTickers = (filename, onError) => {
@@ -32,17 +32,21 @@ var Stockfetch = function () {
   this.processTickers = (tickers) => {
     var self = this
 
+    self.tickerCount = tickers.length
+
     tickers.forEach(ticker => self.getPrice(ticker))
   }
 
+  this.tickerCount = 0
+
   this.getPrice = (ticker) => {
     var self = this
-    var url = 'http://ichart.finance.yahoo.com/table.csv?s=' + ticker
-    self.http.get(url, self.processResponse.bind(self, ticker))
+    var url = 'https://ichart.finance.yahoo.com/table.csv?s=' + ticker
+    self.https.get(url, self.processResponse.bind(self, ticker))
             .on('error', self.processHttpError.bind(self, ticker))
   }
 
-  this.http = http
+  this.https = https
 
   this.processResponse = (ticker, response) => {
     var self = this
@@ -70,7 +74,10 @@ var Stockfetch = function () {
   }
 
   this.printReport = () => {
-
+    var self = this
+    if (self.tickerCount === Object.keys(self.prices).length + Object.keys(self.errors).length) {
+      self.reportCallback(self.sortData(self.prices), self.sortData(self.errors))
+    }
   }
 
   this.processError = (ticker, error) => {
@@ -84,6 +91,18 @@ var Stockfetch = function () {
 
   this.reportCallback = () => {
 
+  }
+
+  this.sortData = (data) => {
+    var toArray = key => [key, data[key]]
+
+    return Object.keys(data).sort().map(toArray)
+  }
+
+  this.getPriceForTickers = (filename, display, error) => {
+    var self = this
+    self.reportCallback = display
+    self.readTickers(filename, error)
   }
 }
 
