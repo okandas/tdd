@@ -181,4 +181,34 @@ describe('stockfetch tests', function () {
 
     td.verify(stockfetch.processError('TSLA', '...error code...'))
   })
+
+  var data = 'Date,Open,High,Low,Close,Volume,Adj Close\n 2015-09-11,619.75,625.780029,617.419983,625.77002,1360900,625.77002\n 2015-09-10,613.099976,624.159973,611.429993,621.349976,1900500,621.349976'
+
+  it('parsePrice should update prices', () => {
+    stockfetch.parsePrice('TSLA', data)
+
+    expect(stockfetch.prices.TSLA).toEqual('625.77002')
+  })
+
+  it('parsePrice should call printReport', () => {
+    td.replace(stockfetch, 'printReport')
+
+    stockfetch.parsePrice('TSLA', data)
+
+    td.verify(stockfetch.printReport())
+  })
+
+  it('processError should update errors', () => {
+    stockfetch.processError('TSLA', 'error')
+
+    expect(stockfetch.errors.TSLA).toEqual('error')
+  })
+
+  it('processError should call print report', () => {
+    td.replace(stockfetch, 'printReport')
+
+    stockfetch.processError('TSLA', 'error')
+
+    td.verify(stockfetch.printReport())
+  })
 })

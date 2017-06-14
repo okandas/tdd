@@ -62,13 +62,25 @@ var Stockfetch = function () {
     self.processError(ticker, error.code)
   }
 
-  this.parsePrice = () => {
+  this.parsePrice = (ticker, data) => {
+    var self = this
+    var price = data.split('\n')[1].split(',').pop()
+    self.prices[ticker] = price
+    self.printReport()
+  }
+
+  this.printReport = () => {
 
   }
 
-  this.processError = () => {
-
+  this.processError = (ticker, error) => {
+    var self = this
+    self.errors[ticker] = error
+    this.printReport()
   }
+
+  this.prices = {}
+  this.errors = {}
 }
 
 module.exports = Stockfetch
