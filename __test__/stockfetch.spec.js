@@ -80,4 +80,14 @@ describe('stockfetch tests', function () {
 
     expect(stockfetch.parseTickers(rawData)).toEqual(['GOOG'])
   })
+
+  it('processTickers should call getPrice for each ticker symbol', () => {
+    td.replace(stockfetch, 'getPrice')
+
+    stockfetch.processTickers(['a', 'b', 'c'])
+
+    td.verify(stockfetch.getPrice('a'))
+    td.verify(stockfetch.getPrice('b'))
+    td.verify(stockfetch.getPrice('c'))
+  })
 })

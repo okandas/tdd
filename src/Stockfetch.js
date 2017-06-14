@@ -28,7 +28,13 @@ var Stockfetch = function () {
     return data.split('\n').filter(format)
   }
 
-  this.processTickers = () => {
+  this.processTickers = (tickers) => {
+    var self = this
+
+    tickers.forEach(ticker => self.getPrice(ticker))
+  }
+
+  this.getPrice = (ticker) => {
 
   }
 }
