@@ -90,4 +90,95 @@ describe('stockfetch tests', function () {
     td.verify(stockfetch.getPrice('b'))
     td.verify(stockfetch.getPrice('c'))
   })
+
+  it('getPrice should call get on http with valid URL', done => {
+    td.replace(stockfetch.http, 'get', url => {
+      expect(url).toEqual('http://ichart.finance.yahoo.com/table.csv?s=TSLA')
+      done()
+      return { on: () => {} }
+    })
+
+    stockfetch.getPrice('TSLA')
+  })
+
+  it('getPrice should send a response handler to get', done => {
+    var ahandler = () => {}
+
+    td.replace(stockfetch.processResponse, 'bind')
+    td.when(stockfetch.processResponse.bind(stockfetch, 'TSLA')).thenReturn(ahandler)
+
+    td.replace(stockfetch.http, 'get', (url, handler) => {
+      expect(handler).toEqual(ahandler)
+      done()
+      return { on: () => {} }
+    })
+
+    stockfetch.getPrice('TSLA')
+  })
+
+  it('getPrice should register handler for failure to reach host', done => {
+    var errorHandler = () => {}
+
+    td.replace(stockfetch.processHttpError, 'bind')
+    td.when(stockfetch.processHttpError.bind(stockfetch, 'TSLA')).thenReturn(errorHandler)
+
+    var stub = (event, handler) => {
+      expect(event).toEqual('error')
+      expect(handler).toEqual(errorHandler)
+      done()
+    }
+
+    td.replace(stockfetch.http, 'get', () => {
+      return {
+        on: stub
+      }
+    })
+
+    stockfetch.getPrice('TSLA')
+  })
+
+  it('processResponse should call parsePrice with valid data', () => {
+    var dataFunction
+    var endFunction
+
+    var response = {
+      statusCode: 200,
+      on: (event, handler) => {
+        if (event === 'data') dataFunction = handler
+        if (event === 'end') endFunction = handler
+      }
+    }
+
+    td.replace(stockfetch, 'parsePrice')
+
+    stockfetch.processResponse('TSLA', response)
+
+    dataFunction('some ')
+    dataFunction('data')
+    endFunction()
+
+    td.verify(stockfetch.parsePrice('TSLA', 'some data'))
+  })
+
+  it('processResponse should call processError only if response failed', () => {
+    var response = {
+      statusCode: 200,
+      on: () => {}
+    }
+
+    td.replace(stockfetch, 'processError')
+
+    stockfetch.processResponse('TSLA', response)
+
+    td.verify(stockfetch.processError(), {times: 0})
+  })
+
+  it('processHttpError should call processError with error details', () => {
+    var error = {code: '...error code...'}
+    td.replace(stockfetch, 'processError')
+
+    stockfetch.processHttpError('TSLA', error)
+
+    td.verify(stockfetch.processError('TSLA', '...error code...'))
+  })
 })

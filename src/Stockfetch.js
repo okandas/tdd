@@ -1,4 +1,5 @@
 var fs = require('fs')
+var http = require('http')
 
 var Stockfetch = function () {
   this.readTickers = (filename, onError) => {
@@ -35,6 +36,37 @@ var Stockfetch = function () {
   }
 
   this.getPrice = (ticker) => {
+    var self = this
+    var url = 'http://ichart.finance.yahoo.com/table.csv?s=' + ticker
+    self.http.get(url, self.processResponse.bind(self, ticker))
+            .on('error', self.processHttpError.bind(self, ticker))
+  }
+
+  this.http = http
+
+  this.processResponse = (ticker, response) => {
+    var self = this
+    if (response.statusCode === 200) {
+      var data = ''
+      response.on('data', chunk => { data += chunk })
+      response.on('end', () => {
+        self.parsePrice(ticker, data)
+      })
+    } else {
+      self.processError(ticker, response.statusCode)
+    }
+  }
+
+  this.processHttpError = (ticker, error) => {
+    var self = this
+    self.processError(ticker, error.code)
+  }
+
+  this.parsePrice = () => {
+
+  }
+
+  this.processError = () => {
 
   }
 }
