@@ -360,7 +360,7 @@ describe('integration tests for stockfetch', () => {
   })
 
   test('getPriceForTickers should respond well for a valid file', done => {
-    var onError = td.function()
+    var onError = td.func()
 
     var display = (prices, errors) => {
       expect(prices.length).toEqual(5)
@@ -370,5 +370,5 @@ describe('integration tests for stockfetch', () => {
     }
 
     stockfetch.getPriceForTickers('tickers.txt', display, onError)
-  }, 10000)
+  }, 90000)
 })
